@@ -1,4 +1,4 @@
-const BASE = '/wfs'
+const BASE = '/api/wfs'
 
 export async function fetchBairros() {
   const params = new URLSearchParams({
