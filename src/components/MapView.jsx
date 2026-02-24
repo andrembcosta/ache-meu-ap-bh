@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getCentroid } from '../utils/geo'
@@ -104,7 +104,9 @@ export default function MapView({ bairroFeature, active, recentlyFinished, bbox 
       center={[-19.917, -43.934]}
       zoom={13}
       style={{ height: '100%', width: '100%' }}
+      zoomControl={false}
     >
+      <ZoomControl position="topright" />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
