@@ -110,6 +110,7 @@ export default function MapView({ bairroFeature, active, recentlyFinished, bbox 
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        keepBuffer={6}
       />
 
       {bbox && <FitBounds bbox={bbox} />}
