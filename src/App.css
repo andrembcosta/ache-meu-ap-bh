@@ -341,4 +341,12 @@ body {
     right: 8px;
     width: auto;
   }
+
+  /* Move zoom control to bottom-left on mobile */
+  .leaflet-top.leaflet-right {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: 0;
+  }
 }
