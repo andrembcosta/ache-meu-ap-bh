@@ -16,7 +16,7 @@ export default function App() {
   const [bbox, setBbox] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [showLegend, setShowLegend] = useState(true)
+  const [expanded, setExpanded] = useState(true)
 
   // Load all bairros once on mount
   useEffect(() => {
@@ -69,19 +69,12 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="header-row">
-            <h1>Construções em BH</h1>
-            <button
-              className="legend-toggle"
-              onClick={() => setShowLegend(v => !v)}
-              title={showLegend ? 'Ocultar legenda' : 'Mostrar legenda'}
-            >
-              {showLegend ? '▲' : '▼'}
-            </button>
-          </div>
-          <p className="subtitle">
-            Projetos de edificação residencial licenciados e ativos
-          </p>
+          <h1>Construções em BH</h1>
+          {expanded && (
+            <p className="subtitle">
+              Projetos de edificação residencial licenciados e ativos
+            </p>
+          )}
         </div>
 
         <div className="search-wrapper">
@@ -113,41 +106,50 @@ export default function App() {
           )}
         </div>
 
-        <div className="status-area">
-          {loading && (
-            <div className="status">
-              <span className="spinner" /> Buscando construções…
+        {expanded && (
+          <>
+            <div className="status-area">
+              {loading && (
+                <div className="status">
+                  <span className="spinner" /> Buscando construções…
+                </div>
+              )}
+              {error && <div className="status error">{error}</div>}
+              {!loading && selectedBairro && !error && (
+                <div className="status success">
+                  <strong>{active.length}</strong> ativa(s) · <strong>{recentlyFinished.length}</strong> concluída(s) recentemente em{' '}
+                  <strong>{selectedBairro.properties.NOME}</strong>
+                </div>
+              )}
             </div>
-          )}
-          {error && <div className="status error">{error}</div>}
-          {!loading && selectedBairro && !error && (
-            <div className="status success">
-              <strong>{active.length}</strong> ativa(s) · <strong>{recentlyFinished.length}</strong> concluída(s) recentemente em{' '}
-              <strong>{selectedBairro.properties.NOME}</strong>
-            </div>
-          )}
-        </div>
 
-        {showLegend && (
-          <div className="legend">
-            <div className="legend-item">
-              <span className="legend-dot red" />
-              <span>Em construção (ativa)</span>
+            <div className="legend">
+              <div className="legend-item">
+                <span className="legend-dot red" />
+                <span>Em construção (ativa)</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-dot green" />
+                <span>Concluída nos últimos 6 meses</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-poly" />
+                <span>Limite do bairro</span>
+              </div>
             </div>
-            <div className="legend-item">
-              <span className="legend-dot green" />
-              <span>Concluída nos últimos 6 meses</span>
+
+            <div className="sidebar-footer">
+              Fonte: <a href="https://bhmap.pbh.gov.br" target="_blank" rel="noreferrer">BHMap / PBH</a>
             </div>
-            <div className="legend-item">
-              <span className="legend-poly" />
-              <span>Limite do bairro</span>
-            </div>
-          </div>
+          </>
         )}
 
-        <div className="sidebar-footer">
-          Fonte: <a href="https://bhmap.pbh.gov.br" target="_blank" rel="noreferrer">BHMap / PBH</a>
-        </div>
+        <button
+          className="sidebar-collapse-btn"
+          onClick={() => setExpanded(v => !v)}
+        >
+          {expanded ? '▲ ocultar' : '▼ mostrar'}
+        </button>
       </aside>
 
       <main className="map-container">
