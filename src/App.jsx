@@ -16,6 +16,7 @@ export default function App() {
   const [bbox, setBbox] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showLegend, setShowLegend] = useState(true)
 
   // Load all bairros once on mount
   useEffect(() => {
@@ -68,7 +69,16 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1>Construções em BH</h1>
+          <div className="header-row">
+            <h1>Construções em BH</h1>
+            <button
+              className="legend-toggle"
+              onClick={() => setShowLegend(v => !v)}
+              title={showLegend ? 'Ocultar legenda' : 'Mostrar legenda'}
+            >
+              {showLegend ? '▲' : '▼'}
+            </button>
+          </div>
           <p className="subtitle">
             Projetos de edificação residencial licenciados e ativos
           </p>
@@ -118,20 +128,22 @@ export default function App() {
           )}
         </div>
 
-        <div className="legend">
-          <div className="legend-item">
-            <span className="legend-dot red" />
-            <span>Em construção (ativa)</span>
+        {showLegend && (
+          <div className="legend">
+            <div className="legend-item">
+              <span className="legend-dot red" />
+              <span>Em construção (ativa)</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot green" />
+              <span>Concluída nos últimos 6 meses</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-poly" />
+              <span>Limite do bairro</span>
+            </div>
           </div>
-          <div className="legend-item">
-            <span className="legend-dot green" />
-            <span>Concluída nos últimos 6 meses</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-poly" />
-            <span>Limite do bairro</span>
-          </div>
-        </div>
+        )}
 
         <div className="sidebar-footer">
           Fonte: <a href="https://bhmap.pbh.gov.br" target="_blank" rel="noreferrer">BHMap / PBH</a>
