@@ -67,92 +67,96 @@ export default function App() {
 
   return (
     <div className="app">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <h1>Construções em BH</h1>
-          {expanded && (
+      {expanded && (
+        <aside className="sidebar">
+          <div className="sidebar-header">
+            <h1>Construções em BH</h1>
             <p className="subtitle">
               Projetos de edificação residencial licenciados e ativos
             </p>
-          )}
-        </div>
+          </div>
 
-        <div className="search-wrapper">
-          <input
-            type="text"
-            className="search-input"
-            placeholder={bairrosLoading ? 'Carregando bairros…' : 'Digite o nome do bairro…'}
-            disabled={bairrosLoading}
-            value={query}
-            onChange={e => {
-              setQuery(e.target.value)
-              setShowSuggestions(true)
-            }}
-            onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-          />
-          {showSuggestions && suggestions.length > 0 && (
-            <ul className="suggestions">
-              {suggestions.map(b => (
-                <li
-                  key={b.properties.ID}
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => selectBairro(b)}
-                >
-                  {b.properties.NOME}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <div className="search-wrapper">
+            <input
+              type="text"
+              className="search-input"
+              placeholder={bairrosLoading ? 'Carregando bairros…' : 'Digite o nome do bairro…'}
+              disabled={bairrosLoading}
+              value={query}
+              onChange={e => {
+                setQuery(e.target.value)
+                setShowSuggestions(true)
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="suggestions">
+                {suggestions.map(b => (
+                  <li
+                    key={b.properties.ID}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => selectBairro(b)}
+                  >
+                    {b.properties.NOME}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        {expanded && (
-          <>
-            <div className="status-area">
-              {loading && (
-                <div className="status">
-                  <span className="spinner" /> Buscando construções…
-                </div>
-              )}
-              {error && <div className="status error">{error}</div>}
-              {!loading && selectedBairro && !error && (
-                <div className="status success">
-                  <strong>{active.length}</strong> ativa(s) · <strong>{recentlyFinished.length}</strong> concluída(s) recentemente em{' '}
-                  <strong>{selectedBairro.properties.NOME}</strong>
-                </div>
-              )}
-            </div>
-
-            <div className="legend">
-              <div className="legend-item">
-                <span className="legend-dot red" />
-                <span>Em construção (ativa)</span>
+          <div className="status-area">
+            {loading && (
+              <div className="status">
+                <span className="spinner" /> Buscando construções…
               </div>
-              <div className="legend-item">
-                <span className="legend-dot green" />
-                <span>Concluída nos últimos 6 meses</span>
+            )}
+            {error && <div className="status error">{error}</div>}
+            {!loading && selectedBairro && !error && (
+              <div className="status success">
+                <strong>{active.length}</strong> ativa(s) · <strong>{recentlyFinished.length}</strong> concluída(s) recentemente em{' '}
+                <strong>{selectedBairro.properties.NOME}</strong>
               </div>
-              <div className="legend-item">
-                <span className="legend-poly" />
-                <span>Limite do bairro</span>
-              </div>
-            </div>
+            )}
+          </div>
 
-            <div className="sidebar-footer">
-              Fonte: <a href="https://bhmap.pbh.gov.br" target="_blank" rel="noreferrer">BHMap / PBH</a>
+          <div className="legend">
+            <div className="legend-item">
+              <span className="legend-dot red" />
+              <span>Em construção (ativa)</span>
             </div>
-          </>
-        )}
+            <div className="legend-item">
+              <span className="legend-dot green" />
+              <span>Concluída nos últimos 6 meses</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-poly" />
+              <span>Limite do bairro</span>
+            </div>
+          </div>
 
-        <button
-          className="sidebar-collapse-btn"
-          onClick={() => setExpanded(v => !v)}
-        >
-          {expanded ? '▲ ocultar' : '▼ mostrar'}
-        </button>
-      </aside>
+          <div className="sidebar-footer">
+            Fonte: <a href="https://bhmap.pbh.gov.br" target="_blank" rel="noreferrer">BHMap / PBH</a>
+          </div>
+
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setExpanded(false)}
+          >
+            ▲ ocultar
+          </button>
+        </aside>
+      )}
 
       <main className="map-container">
+        {!expanded && (
+          <button
+            className="sidebar-expand-btn"
+            onClick={() => setExpanded(true)}
+          >
+            ▼ mostrar
+          </button>
+        )}
         <MapView
           bairroFeature={selectedBairro}
           active={active}

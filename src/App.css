@@ -39,7 +39,7 @@ body {
   margin-bottom: 6px;
 }
 
-/* ── Collapse button (bottom of sidebar) ── */
+/* ── Collapse / expand buttons ── */
 .sidebar-collapse-btn {
   width: calc(100% + 40px);
   margin: auto -20px -20px;
@@ -57,6 +57,28 @@ body {
 .sidebar-collapse-btn:hover {
   color: #aaa;
   background: rgba(255, 255, 255, 0.03);
+}
+
+.sidebar-expand-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 6px;
+  color: #888;
+  font-size: 0.72rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar-expand-btn:hover {
+  color: #ccc;
+  border-color: #555;
 }
 
 .subtitle {
@@ -268,15 +290,13 @@ body {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
   }
 
-  /* Hide non-essential elements to save vertical space */
+  .sidebar-header h1 {
+    font-size: 1rem;
+  }
+
   .subtitle,
   .sidebar-footer {
     display: none;
-  }
-
-  .sidebar-header h1 {
-    font-size: 1rem;
-    margin-bottom: 0;
   }
 
   .status-area {
