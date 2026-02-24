@@ -150,12 +150,42 @@ export default function App() {
 
       <main className="map-container">
         {!expanded && (
-          <button
-            className="sidebar-expand-btn"
-            onClick={() => setExpanded(true)}
-          >
-            ▼ mostrar
-          </button>
+          <div className="floating-search">
+            <div className="floating-search-row">
+              <div className="search-wrapper">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder={bairrosLoading ? 'Carregando…' : 'Digite o bairro…'}
+                  disabled={bairrosLoading}
+                  value={query}
+                  onChange={e => { setQuery(e.target.value); setShowSuggestions(true) }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                />
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="suggestions">
+                    {suggestions.map(b => (
+                      <li
+                        key={b.properties.ID}
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => selectBairro(b)}
+                      >
+                        {b.properties.NOME}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button
+                className="floating-expand-btn"
+                onClick={() => setExpanded(true)}
+                title="Abrir painel"
+              >
+                ≡
+              </button>
+            </div>
+          </div>
         )}
         <MapView
           bairroFeature={selectedBairro}
