@@ -15,6 +15,7 @@ body {
 .app {
   display: flex;
   height: 100vh;
+  height: 100dvh; /* mobile: excludes browser chrome */
   overflow: hidden;
 }
 
@@ -231,4 +232,46 @@ body {
 
 .popup-link a {
   color: #2980b9;
+}
+
+/* ── Mobile (portrait phones) ── */
+@media (max-width: 640px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Hide non-essential elements to save vertical space */
+  .subtitle,
+  .sidebar-footer {
+    display: none;
+  }
+
+  .sidebar-header h1 {
+    font-size: 1rem;
+    margin-bottom: 0;
+  }
+
+  .status-area {
+    min-height: unset;
+  }
+
+  /* Legend goes horizontal on mobile */
+  .legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+
+  /* Suggestions list capped shorter so map stays visible */
+  .suggestions {
+    max-height: 140px;
+  }
 }
