@@ -20,8 +20,9 @@ function makeIcon(color) {
   })
 }
 
-const activeIcon   = makeIcon('#e74c3c')
-const finishedIcon = makeIcon('#27ae60')
+const activeIcon         = makeIcon('#e74c3c')
+const finishedIcon       = makeIcon('#27ae60')
+const olderFinishedIcon  = makeIcon('#3498db')
 
 const neighborhoodStyle = {
   color: '#2980b9',
@@ -98,7 +99,7 @@ function ConstructionMarker({ f, icon }) {
   )
 }
 
-export default function MapView({ bairroFeature, active, recentlyFinished, bbox }) {
+export default function MapView({ bairroFeature, active, recentlyFinished, olderFinished, bbox }) {
   return (
     <MapContainer
       center={[-19.917, -43.934]}
@@ -128,6 +129,9 @@ export default function MapView({ bairroFeature, active, recentlyFinished, bbox 
       ))}
       {recentlyFinished.map(f => (
         <ConstructionMarker key={f.properties.ID_PROJETO_EDIFICACOES} f={f} icon={finishedIcon} />
+      ))}
+      {olderFinished.map(f => (
+        <ConstructionMarker key={f.properties.ID_PROJETO_EDIFICACOES} f={f} icon={olderFinishedIcon} />
       ))}
     </MapContainer>
   )

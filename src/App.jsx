@@ -13,6 +13,7 @@ export default function App() {
   const [selectedBairro, setSelectedBairro] = useState(null)
   const [active, setActive] = useState([])
   const [recentlyFinished, setRecentlyFinished] = useState([])
+  const [olderFinished, setOlderFinished] = useState([])
   const [bbox, setBbox] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -47,6 +48,7 @@ export default function App() {
     setShowSuggestions(false)
     setActive([])
     setRecentlyFinished([])
+    setOlderFinished([])
     setError(null)
 
     const bb = getBbox(bairro.geometry)
@@ -55,9 +57,10 @@ export default function App() {
     setLoading(true)
     try {
       const features = await fetchProjectsByBbox(...bb)
-      const { active, recentlyFinished } = processFeatures(features)
+      const { active, recentlyFinished, olderFinished } = processFeatures(features)
       setActive(active)
       setRecentlyFinished(recentlyFinished)
+      setOlderFinished(olderFinished)
     } catch (err) {
       setError('Erro ao carregar projetos: ' + err.message)
     } finally {
@@ -130,6 +133,10 @@ export default function App() {
               <span>Concluída nos últimos 6 meses</span>
             </div>
             <div className="legend-item">
+              <span className="legend-dot blue" />
+              <span>Concluída entre 6 e 24 meses</span>
+            </div>
+            <div className="legend-item">
               <span className="legend-poly" />
               <span>Limite do bairro</span>
             </div>
@@ -191,6 +198,7 @@ export default function App() {
           bairroFeature={selectedBairro}
           active={active}
           recentlyFinished={recentlyFinished}
+          olderFinished={olderFinished}
           bbox={bbox}
         />
       </main>

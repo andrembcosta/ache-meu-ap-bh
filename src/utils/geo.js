@@ -38,6 +38,12 @@ const SIX_MONTHS_AGO = (() => {
   return d.toISOString().slice(0, 10)
 })()
 
+const TWENTY_FOUR_MONTHS_AGO = (() => {
+  const d = new Date()
+  d.setMonth(d.getMonth() - 24)
+  return d.toISOString().slice(0, 10)
+})()
+
 function isActiveConstruction(p) {
   if (p.TIPO !== 'LICENCIAMENTO') return false
   if (p.USO_GERAL !== 'RESIDENCIAL') return false
@@ -61,8 +67,21 @@ function isRecentlyFinished(p) {
   return p.DATA_ULTIMA_BAIXA.slice(0, 10) >= SIX_MONTHS_AGO
 }
 
+function isOlderFinished(p) {
+  if (p.TIPO !== 'LICENCIAMENTO') return false
+  if (p.USO_GERAL !== 'RESIDENCIAL') return false
+  if (!p.DATA_ULTIMA_BAIXA) return false
+  const date = p.DATA_ULTIMA_BAIXA.slice(0, 10)
+  return date >= TWENTY_FOUR_MONTHS_AGO && date < SIX_MONTHS_AGO
+}
+
+function isApartment(p) {
+  return Number(p.QTD_UND_RESIDENCIAL) >= 3 && Number(p.QTDE_PAVIMENTOS) >= 3
+}
+
 // Deduplicate by address (keep latest DATA_APROVACAO per address), then split
-// into active constructions and recently finished ones.
+// into active constructions and recently finished ones. Houses are excluded
+// up front so all categories only contain apartment-style buildings.
 export function processFeatures(features) {
   const grouped = new Map()
 
@@ -81,9 +100,10 @@ export function processFeatures(features) {
     }
   }
 
-  const deduped = Array.from(grouped.values())
+  const deduped = Array.from(grouped.values()).filter(f => isApartment(f.properties))
   return {
     active: deduped.filter(f => isActiveConstruction(f.properties)),
     recentlyFinished: deduped.filter(f => isRecentlyFinished(f.properties)),
+    olderFinished: deduped.filter(f => isOlderFinished(f.properties)),
   }
 }
