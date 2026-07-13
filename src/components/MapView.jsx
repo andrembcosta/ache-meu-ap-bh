@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { getCentroid } from '../utils/geo'
+import { getCentroid, ROOM_OPTIONS } from '../utils/geo'
+import { fetchProjectParams } from '../api/wfs'
 
 function makeIcon(color) {
   return L.divIcon({
@@ -47,11 +48,60 @@ function formatDate(isoStr) {
   return isoStr.slice(0, 10).split('-').reverse().join('/')
 }
 
+// Renders the residential-units-per-bedroom breakdown from SIATU params.
+// `params`: undefined = still loading, null = no data recorded, object = data.
+function RoomInfo({ params }) {
+  if (params === undefined) {
+    return <div className="popup-rooms loading">Carregando quartos…</div>
+  }
+  const q = params && params.unidadesResidenciaisPorQuarto
+  const rows = q
+    ? ROOM_OPTIONS
+        .map(o => [o.label, q[o.key]])
+        .filter(([, v]) => v != null)
+    : []
+  if (rows.length === 0) {
+    return <div className="popup-rooms empty">Quartos: não informado</div>
+  }
+  return (
+    <div className="popup-rooms">
+      <div className="popup-rooms-title">Unidades por nº de quartos</div>
+      <table className="popup-table">
+        <tbody>
+          {rows.map(([label, v]) => (
+            <tr key={label}>
+              <td>{label} quarto{label === '1' ? '' : 's'}</td>
+              <td><b>{v} unid.</b></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function ConstructionMarker({ f, icon }) {
   const p = f.properties
   const [lat, lon] = getCentroid(f.geometry)
+  // undefined until the popup is first opened; then null (no data) or the params object.
+  const [params, setParams] = useState(undefined)
+
+  const handleOpen = () => {
+    if (params !== undefined) return
+    fetchProjectParams(p.ID_PROJETO_EDIFICACOES).then(d => setParams(d || null))
+  }
+
+  const googleUrl = p.ENDERECO
+    ? `https://www.google.com/search?q=${encodeURIComponent(p.ENDERECO + ' Belo Horizonte')}`
+    : null
+
   return (
-    <Marker key={p.ID_PROJETO_EDIFICACOES} position={[lat, lon]} icon={icon}>
+    <Marker
+      key={p.ID_PROJETO_EDIFICACOES}
+      position={[lat, lon]}
+      icon={icon}
+      eventHandlers={{ popupopen: handleOpen }}
+    >
       <Popup minWidth={240}>
         <div className="popup-content">
           <div className="popup-address">
@@ -87,12 +137,19 @@ function ConstructionMarker({ f, icon }) {
               </tr>
             </tbody>
           </table>
-          {p.LINK_SIATU_EDIFICACAO && (
-            <div
-              className="popup-link"
-              dangerouslySetInnerHTML={{ __html: p.LINK_SIATU_EDIFICACAO }}
-            />
-          )}
+
+          <RoomInfo params={params} />
+
+          <div className="popup-links">
+            {p.LINK_SIATU_EDIFICACAO && (
+              <span dangerouslySetInnerHTML={{ __html: p.LINK_SIATU_EDIFICACAO }} />
+            )}
+            {googleUrl && (
+              <a href={googleUrl} target="_blank" rel="noopener noreferrer">
+                Buscar no Google
+              </a>
+            )}
+          </div>
         </div>
       </Popup>
     </Marker>

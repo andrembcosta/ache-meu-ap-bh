@@ -79,6 +79,41 @@ function isApartment(p) {
   return Number(p.QTD_UND_RESIDENCIAL) >= 3 && Number(p.QTDE_PAVIMENTOS) >= 3
 }
 
+// The four bedroom classes SIATU tracks. `value` 4 means "4 or more".
+export const ROOM_OPTIONS = [
+  { value: 1, key: '1quarto', label: '1' },
+  { value: 2, key: '2quartos', label: '2' },
+  { value: 3, key: '3quartos', label: '3' },
+  { value: 4, key: '4oumaisquartos', label: '4+' },
+]
+
+// Given a SIATU params object, returns a Set of bedroom classes the building has
+// units for (e.g. {2, 3}). Empty set means no bedroom data was recorded.
+export function roomClasses(params) {
+  const q = params && params.unidadesResidenciaisPorQuarto
+  const set = new Set()
+  if (!q) return set
+  for (const { value, key } of ROOM_OPTIONS) {
+    if (q[key]) set.add(value)
+  }
+  return set
+}
+
+// Run async `fn` over `items` with at most `limit` in flight at once.
+export async function runPool(items, limit, fn) {
+  const results = new Array(items.length)
+  let next = 0
+  async function worker() {
+    while (next < items.length) {
+      const i = next++
+      results[i] = await fn(items[i], i)
+    }
+  }
+  const workers = Array.from({ length: Math.min(limit, items.length) }, worker)
+  await Promise.all(workers)
+  return results
+}
+
 // Deduplicate by address (keep latest DATA_APROVACAO per address), then split
 // into active constructions and recently finished ones. Houses are excluded
 // up front so all categories only contain apartment-style buildings.

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import MapView from './components/MapView'
-import { fetchBairros, fetchProjectsByBbox } from './api/wfs'
-import { normalize, getBbox, processFeatures } from './utils/geo'
+import { fetchBairros, fetchProjectsByBbox, fetchProjectParams } from './api/wfs'
+import { normalize, getBbox, processFeatures, roomClasses, runPool, ROOM_OPTIONS } from './utils/geo'
 import './App.css'
 
 export default function App() {
@@ -18,6 +18,11 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [expanded, setExpanded] = useState(true)
+  // Room filter: which bedroom classes are selected (empty = no filter), the fetched
+  // SIATU params keyed by project id, and whether a prefetch batch is in flight.
+  const [selectedRooms, setSelectedRooms] = useState([])
+  const [roomParams, setRoomParams] = useState({})
+  const [roomsLoading, setRoomsLoading] = useState(false)
 
   // Load all bairros once on mount
   useEffect(() => {
@@ -66,6 +71,59 @@ export default function App() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const allShown = useMemo(
+    () => [...active, ...recentlyFinished, ...olderFinished],
+    [active, recentlyFinished, olderFinished]
+  )
+
+  // Prefetch bedroom data for the shown buildings — but only once a room filter is
+  // actually engaged, so plain browsing sends zero extra requests. Bounded to 8 in
+  // flight; fetchProjectParams caches so nothing is fetched twice.
+  useEffect(() => {
+    if (selectedRooms.length === 0) return
+    const missing = allShown
+      .map(f => f.properties.ID_PROJETO_EDIFICACOES)
+      .filter(id => !(id in roomParams))
+    if (missing.length === 0) return
+    let cancelled = false
+    setRoomsLoading(true)
+    runPool(missing, 8, id => fetchProjectParams(id).then(p => [id, p || null]))
+      .then(entries => {
+        if (cancelled) return
+        setRoomParams(prev => {
+          const next = { ...prev }
+          for (const [id, p] of entries) next[id] = p
+          return next
+        })
+      })
+      .finally(() => { if (!cancelled) setRoomsLoading(false) })
+    return () => { cancelled = true }
+    // roomParams intentionally omitted to avoid re-running after we populate it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRooms, allShown])
+
+  // Apply the room filter. Buildings with no recorded bedroom data are hidden while
+  // a filter is active (per product decision).
+  const { fActive, fRecent, fOlder } = useMemo(() => {
+    const match = f => {
+      if (selectedRooms.length === 0) return true
+      const classes = roomClasses(roomParams[f.properties.ID_PROJETO_EDIFICACOES])
+      if (classes.size === 0) return false
+      return selectedRooms.some(r => classes.has(r))
+    }
+    return {
+      fActive: active.filter(match),
+      fRecent: recentlyFinished.filter(match),
+      fOlder: olderFinished.filter(match),
+    }
+  }, [active, recentlyFinished, olderFinished, selectedRooms, roomParams])
+
+  function toggleRoom(value) {
+    setSelectedRooms(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    )
   }
 
   return (
@@ -117,11 +175,37 @@ export default function App() {
             {error && <div className="status error">{error}</div>}
             {!loading && selectedBairro && !error && (
               <div className="status success">
-                <strong>{active.length}</strong> ativa(s) · <strong>{recentlyFinished.length}</strong> concluída(s) recentemente em{' '}
+                <strong>{fActive.length}</strong> ativa(s) · <strong>{fRecent.length}</strong> concluída(s) recentemente em{' '}
                 <strong>{selectedBairro.properties.NOME}</strong>
               </div>
             )}
           </div>
+
+          {selectedBairro && (
+            <div className="room-filter">
+              <div className="room-filter-label">
+                Filtrar por nº de quartos
+                {roomsLoading && <span className="spinner" />}
+              </div>
+              <div className="room-chips">
+                {ROOM_OPTIONS.map(o => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    className={'room-chip' + (selectedRooms.includes(o.value) ? ' active' : '')}
+                    onClick={() => toggleRoom(o.value)}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              {selectedRooms.length > 0 && (
+                <div className="room-filter-hint">
+                  Prédios sem dado de quartos ficam ocultos.
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="legend">
             <div className="legend-item">
@@ -196,9 +280,9 @@ export default function App() {
         )}
         <MapView
           bairroFeature={selectedBairro}
-          active={active}
-          recentlyFinished={recentlyFinished}
-          olderFinished={olderFinished}
+          active={fActive}
+          recentlyFinished={fRecent}
+          olderFinished={fOlder}
           bbox={bbox}
         />
       </main>
