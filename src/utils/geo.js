@@ -44,6 +44,26 @@ const TWENTY_FOUR_MONTHS_AGO = (() => {
   return d.toISOString().slice(0, 10)
 })()
 
+const EIGHTEEN_MONTHS_AGO = (() => {
+  const d = new Date()
+  d.setMonth(d.getMonth() - 18)
+  return d.toISOString().slice(0, 10)
+})()
+
+// Classify an active construction by how long ago it started, for map coloring:
+//   'recent'  → started < 6 months ago        (red)
+//   'mid'     → started 6 to 18 months ago     (orange)
+//   'old'     → started > 18 months ago        (yellow — should finish soon)
+//   'unknown' → no DATA_COMUNICADO_INICIO_OBRA  (purple)
+export function activeStartBucket(p) {
+  const s = p.DATA_COMUNICADO_INICIO_OBRA
+  if (!s) return 'unknown'
+  const d = s.slice(0, 10)
+  if (d >= SIX_MONTHS_AGO) return 'recent'
+  if (d >= EIGHTEEN_MONTHS_AGO) return 'mid'
+  return 'old'
+}
+
 function isActiveConstruction(p) {
   if (p.TIPO !== 'LICENCIAMENTO') return false
   if (p.USO_GERAL !== 'RESIDENCIAL') return false

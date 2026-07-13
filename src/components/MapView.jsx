@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { getCentroid, ROOM_OPTIONS } from '../utils/geo'
+import { getCentroid, ROOM_OPTIONS, activeStartBucket } from '../utils/geo'
 import { fetchProjectParams } from '../api/wfs'
 
 function makeIcon(color) {
@@ -21,9 +21,16 @@ function makeIcon(color) {
   })
 }
 
-const activeIcon         = makeIcon('#e74c3c')
 const finishedIcon       = makeIcon('#27ae60')
 const olderFinishedIcon  = makeIcon('#3498db')
+
+// In-progress constructions colored by start date (see activeStartBucket in geo.js)
+const START_ICONS = {
+  recent:  makeIcon('#e74c3c'), // red    — started < 6 months ago
+  mid:     makeIcon('#e67e22'), // orange — started 6 to 18 months ago
+  old:     makeIcon('#f1c40f'), // yellow — started > 18 months ago
+  unknown: makeIcon('#9b59b6'), // purple — no start date recorded
+}
 
 const neighborhoodStyle = {
   color: '#2980b9',
@@ -182,7 +189,11 @@ export default function MapView({ bairroFeature, active, recentlyFinished, older
       )}
 
       {active.map(f => (
-        <ConstructionMarker key={f.properties.ID_PROJETO_EDIFICACOES} f={f} icon={activeIcon} />
+        <ConstructionMarker
+          key={f.properties.ID_PROJETO_EDIFICACOES}
+          f={f}
+          icon={START_ICONS[activeStartBucket(f.properties)]}
+        />
       ))}
       {recentlyFinished.map(f => (
         <ConstructionMarker key={f.properties.ID_PROJETO_EDIFICACOES} f={f} icon={finishedIcon} />

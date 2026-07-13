@@ -224,9 +224,12 @@ body {
   flex-shrink: 0;
 }
 
-.legend-dot.red   { background: #e74c3c; }
-.legend-dot.green { background: #27ae60; }
-.legend-dot.blue  { background: #3498db; }
+.legend-dot.red    { background: #e74c3c; }
+.legend-dot.orange { background: #e67e22; }
+.legend-dot.yellow { background: #f1c40f; }
+.legend-dot.purple { background: #9b59b6; }
+.legend-dot.green  { background: #27ae60; }
+.legend-dot.blue   { background: #3498db; }
 
 .legend-poly {
   width: 20px;

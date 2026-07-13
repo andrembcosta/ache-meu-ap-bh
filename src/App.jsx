@@ -210,7 +210,19 @@ export default function App() {
           <div className="legend">
             <div className="legend-item">
               <span className="legend-dot red" />
-              <span>Em construção (ativa)</span>
+              <span>Em obra · início &lt; 6 meses</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot orange" />
+              <span>Em obra · início 6–18 meses</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot yellow" />
+              <span>Em obra · início &gt; 18 meses</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-dot purple" />
+              <span>Em obra · início não informado</span>
             </div>
             <div className="legend-item">
               <span className="legend-dot green" />
